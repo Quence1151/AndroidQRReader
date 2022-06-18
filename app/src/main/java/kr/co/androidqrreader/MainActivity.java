@@ -11,6 +11,8 @@ import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,6 +32,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult (int requestCode, int resultCode, Intent data) {
         //  com.google.zxing.integration.android.IntentIntegrator.REQUEST_CODE
         //  = 0x0000c0de; // Only use bottom 16 bits
+        long now = System.currentTimeMillis();
+        Date date = new Date(now);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String getTime = sdf.format(date);
+
         if (requestCode == IntentIntegrator.REQUEST_CODE) {
             IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
             if (result == null) {
@@ -41,7 +48,8 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "Scanned: " + result.getContents(), Toast.LENGTH_LONG).show();
                 NetworkTask2 networkTask = new NetworkTask2();
                 Map<String, String> params = new HashMap<String, String>();
-                params.put("value", result.getContents());
+                params.put("empno", result.getContents());
+                params.put("time", getTime);
                 networkTask.execute(params);
                 new IntentIntegrator(MainActivity.this).initiateScan();
             }
