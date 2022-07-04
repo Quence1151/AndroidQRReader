@@ -48,16 +48,13 @@ public class MainActivity extends AppCompatActivity {
                 new IntentIntegrator(MainActivity.this).initiateScan();
             } else {
                 // 스캔된 QRCode --> result.getContents()
+                Toast.makeText(this, "확인중...", Toast.LENGTH_LONG).show();
                 NetworkTask2 networkTask = new NetworkTask2();
                 Map<String, String> params = new HashMap<String, String>();
                 params.put("empno", result.getContents());
                 params.put("time", getTime);
-                if(params.get("empno").isEmpty()){
-                    Toast.makeText(this, "다시 입력해주세요", Toast.LENGTH_LONG).show();
-                }else {
                     networkTask.execute(params);
                     qrScan.initiateScan();
-                }
             }
         } else {
             super.onActivityResult(requestCode, resultCode, data);
@@ -68,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected String doInBackground(Map<String, String>... maps) { // 내가 전송하고 싶은 파라미터
             // Http 요청 준비 작업
-            HttpClient.Builder http = new HttpClient.Builder("POST", "http://kosa2.iptime.org:50232/attendanceCheck");
+            HttpClient.Builder http = new HttpClient.Builder("POST", "https://allinone.kro.kr/attendanceCheck");
             // Parameter 를 전송한다.
             http.addAllParameters(maps[0]);
             //Http 요청 전송
@@ -83,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String s) {
             if(s != null)
-            Toast.makeText(MainActivity.this, s, Toast.LENGTH_LONG).show();
+            Toast.makeText(MainActivity.this, s + "!", Toast.LENGTH_LONG).show();
         }
     }
 }
