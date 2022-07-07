@@ -20,12 +20,15 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity {
     TextView tvTest;
     static String string;
-
+    private IntentIntegrator qrScan;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        new IntentIntegrator(MainActivity.this).initiateScan();
+        qrScan = new IntentIntegrator(MainActivity.this);
+        qrScan.setOrientationLocked(false);
+        qrScan.setPrompt("");
+        qrScan.initiateScan();
 
     }
 
@@ -41,17 +44,20 @@ public class MainActivity extends AppCompatActivity {
             IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
             if (result == null) {
                 // 취소됨
-                Toast.makeText(this, "Cancelled", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "다시 입력해주세요", Toast.LENGTH_LONG).show();
                 new IntentIntegrator(MainActivity.this).initiateScan();
             } else {
                 // 스캔된 QRCode --> result.getContents()
-                Toast.makeText(this, "Scanned: " + result.getContents(), Toast.LENGTH_LONG).show();
                 NetworkTask2 networkTask = new NetworkTask2();
                 Map<String, String> params = new HashMap<String, String>();
                 params.put("empno", result.getContents());
                 params.put("time", getTime);
-                networkTask.execute(params);
-                new IntentIntegrator(MainActivity.this).initiateScan();
+                if(params.get("empno").isEmpty()){
+                    Toast.makeText(this, "다시 입력해주세요", Toast.LENGTH_LONG).show();
+                }else {
+                    networkTask.execute(params);
+                    qrScan.initiateScan();
+                }
             }
         } else {
             super.onActivityResult(requestCode, resultCode, data);
@@ -62,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected String doInBackground(Map<String, String>... maps) { // 내가 전송하고 싶은 파라미터
             // Http 요청 준비 작업
-            HttpClient.Builder http = new HttpClient.Builder("POST", "http://kosa2.iptime.org:50232/postTest");
+            HttpClient.Builder http = new HttpClient.Builder("POST", "http://kosa2.iptime.org:50232/attendanceCheck");
             // Parameter 를 전송한다.
             http.addAllParameters(maps[0]);
             //Http 요청 전송
@@ -76,7 +82,8 @@ public class MainActivity extends AppCompatActivity {
         }
         @Override
         protected void onPostExecute(String s) {
-
+            if(s != null)
+            Toast.makeText(MainActivity.this, s, Toast.LENGTH_LONG).show();
         }
     }
 }
